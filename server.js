@@ -5,7 +5,8 @@ const mysql = require('mysql2');
 const app = express()
 const CookieSession = require('cookie-session');
 const res = require('express/lib/response');
-const bodyParser = require("body-parser")
+const bodyParser = require("body-parser");
+const { off } = require('process');
 
 app.use(bodyParser.urlencoded({ extended: false }));
 
@@ -28,7 +29,7 @@ app.use(CookieSession({
 }))
 
 
-const inlogin = (req, res, next) => {
+const isloggedIn = (req, res, next) => {
   if (!req.session.isLoggedIn) {
     return res.render('showproduct')
   }
@@ -46,7 +47,7 @@ const notLogin = (req, res, next) => {
 
 
 app.get('/', notLogin, (req, res, next) => {
-  con.execute("SELECT * FROM mn_user WHERE id = ?", [res.session.Userid])
+  con.execute("SELECT * FROM mn_user WHERE Id = ?", [res.session.Userid])
     .then(([rows]) => {
       res.render('index', {
         name: rows[0].Fname,
@@ -65,16 +66,15 @@ app.post('/registers', [
 ], (req, res, next) => {
   const validation_result = validationResult(req)
   const { fname, lname, email, phone, password } = req.body
-  console.log(fname, lname, email, phone, password)
 
   if (validation_result.isEmpty()) {
-    con.execute("SELECT * FROM mn_user WHERE email =?", [email], (err, result) => {
+    con.execute("SELECT * FROM mn_user WHERE Email = ?", [email], (err, result) => {
       if (err) throw err
       if (result.length > 0) {
         res.send("This Email is already")
       }
       else {
-        con.execute("INSERT INTO mn_user(fname, lname, email, phone, password) VALUES (?,?,?,?,?)", [fname, lname, email, phone, password])
+        con.execute("INSERT INTO mn_user(Fname,Lname, Email, Phone, Password, Status) VALUES (?,?,?,?,?)", [fname, lname, email, phone, password])
         res.send(`<h3>Your account has been successfully <a href="index"> Login </a> </h3> <br>`)
       }
     })
@@ -91,25 +91,19 @@ app.post('/logins', [
   const validation_result = validationResult(req)
   const { email, password } = req.body
   if (validation_result.isEmpty()) {
-
-    con.execute("SELECT * FROM mn_user WHERE Email = ? and Password = ?", [email, password], (err, result) => {
-      if (err) {
-        res.status(400).send(`<h3>Email or Passrod not correct <a href="index"> Try Again! </a></h3>`)
+    con.execute("SELECT * FROM mn_user WHERE Email = ? AND Password=?", [email, password],(err,result)=>{
+      
+      if(err) console.log("Hello")
+      if(result.length == 0) {
+        
+        return res.render('index')
       }
-      else {
-        req.session.isLoggedIn = true
-        req.session.Userid = rows[0].id
-        req.render('/showproduct', {
-          name: rows[0].Fname,
-          status: rows[0].Status
-        })
-      }
-
+      else res.render('showproduct',{name:result[0].Fname,status:result[0].Status})
     })
+  
   }
+
 })
-
-
 
 
 
