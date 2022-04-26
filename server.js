@@ -14,8 +14,7 @@ const con = mysql.createPool({
   host: "node31258-rattana.app.ruk-com.cloud",
   user: "root",
   password: "MVCtwielIv",
-  database: "shop",
-  port: "11243"
+  database: "shop"
 });
 
 app.set('views', path.join(__dirname, 'views'))
@@ -123,4 +122,4 @@ app.use('/', (req, res, next) => {
 })
 
 
-app.listen(3000, () => console.log('Start on port 3000'))
+app.listen(11243, () => console.log('Start on port 11243'))
