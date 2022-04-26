@@ -71,7 +71,7 @@ app.post('/registers', [
     con.execute("SELECT * FROM mn_user WHERE Email = ?", [email], (err, result) => {
       if (err) throw err
       if (result.length > 0) {
-        res.send("This Email is already")
+        res.send(`This Email is already <a href="register"> Try Again</a>`)
       }
       else {
         con.execute("INSERT INTO mn_user(Fname,Lname, Email, Phone, Password, Status) VALUES (?,?,?,?,?)", [fname, lname, email, phone, password])
@@ -84,7 +84,7 @@ app.post('/registers', [
 })
 
 
-app.post('/logins', [
+app.post('/logins',isloggedIn, [
   body('email', 'Invalid Email Address!').trim().not().isEmpty(),
   body('password', 'Password is Empty!').trim().not().isEmpty()
 ], (req, res, next) => {
@@ -98,7 +98,10 @@ app.post('/logins', [
         
         return res.render('index')
       }
-      else res.render('showproduct',{name:result[0].Fname,status:result[0].Status})
+      else { 
+        req.session.isLoggedIn = ture
+        res.render('showproduct',{name:result[0].Fname,status:result[0].Status})
+      }
     })
   
   }
@@ -123,8 +126,8 @@ app.get('/logout', (req, res, next) => {
   res.redirect('/')
 })
 
-app.use('/', (req, res, next) => {
-  res.status(404).send("ไม่มีหน้านี้ครับ")
+app.use('/', isloggedIn, (req, res, next) => {
+  res.status(404).send(`Not is Page <a hrfe="showproduct"> GO BACK</a>`)
 })
 
 
