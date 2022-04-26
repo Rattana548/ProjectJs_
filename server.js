@@ -84,7 +84,7 @@ app.post('/registers', [
 })
 
 
-app.post('/logins',isloggedIn, [
+app.post('/logins', [
   body('email', 'Invalid Email Address!').trim().not().isEmpty(),
   body('password', 'Password is Empty!').trim().not().isEmpty()
 ], (req, res, next) => {
@@ -93,13 +93,13 @@ app.post('/logins',isloggedIn, [
   if (validation_result.isEmpty()) {
     con.execute("SELECT * FROM mn_user WHERE Email = ? AND Password=?", [email, password],(err,result)=>{
       
-      if(err) console.log("Hello")
+      if(err) res.render('index')
       if(result.length == 0) {
         
         return res.render('index')
       }
       else { 
-        req.session.isLoggedIn = ture
+       
         res.render('showproduct',{name:result[0].Fname,status:result[0].Status})
       }
     })
