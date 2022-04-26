@@ -68,37 +68,49 @@ app.post('/registers', [
   console.log(fname, lname, email, phone, password)
 
   if (validation_result.isEmpty()) {
-    con.execute("INSERT INTO mn_user(fname, lname, email, phone, password) VALUES (?,?,?,?,?)", [fname, lname, email, phone, password])
-      res.send(`Your account has been successfully <a href="index"> Login </a>`)
+    con.execute("SELECT * FROM mn_user WHERE email =?", [email], (err, result) => {
+      if (err) throw err
+      if (result.length > 0) {
+        res.send("This Email is already")
+      }
+      else {
+        con.execute("INSERT INTO mn_user(fname, lname, email, phone, password) VALUES (?,?,?,?,?)", [fname, lname, email, phone, password])
+        res.send(`<h3>Your account has been successfully <a href="index"> Login </a> </h3> <br>`)
+      }
+    })
+
   }
 
 })
 
 
-
-
-app.post('/logins', inlogin, [
+app.post('/logins', [
   body('email', 'Invalid Email Address!').trim().not().isEmpty(),
   body('password', 'Password is Empty!').trim().not().isEmpty()
 ], (req, res, next) => {
   const validation_result = validationResult(req)
   const { email, password } = req.body
   if (validation_result.isEmpty()) {
-    con.execute("SELECT * FROM mn_user WHERE Email = ? and Password = ?", [email, password])
-      .then(([rows]) => {
-        if (rows.length == 1) {
-          req.session.isLoggedIn = true
-          req.session.Userid = rows[0].id
-          req.render('/showproduct', {
-            name: rows[0].Fname,
-            status: rows[0].Status
-          })
-        } else {
-          res.render('/')
-        }
-      })
+
+    con.execute("SELECT * FROM mn_user WHERE Email = ? and Password = ?", [email, password], (err, result) => {
+      if (err) {
+        res.status(400).send(`<h3>Email or Passrod not correct <a href="index"> Try Again! </a></h3>`)
+      }
+      else {
+        req.session.isLoggedIn = true
+        req.session.Userid = rows[0].id
+        req.render('/showproduct', {
+          name: rows[0].Fname,
+          status: rows[0].Status
+        })
+      }
+
+    })
   }
 })
+
+
+
 
 
 app.get('/index', (req, res) => {
@@ -122,4 +134,4 @@ app.use('/', (req, res, next) => {
 })
 
 
-app.listen(11243, () => console.log('Start on port 11243'))
+app.listen(3000, () => console.log('Start on port 11243'))
