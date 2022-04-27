@@ -4,9 +4,7 @@ const { body, validationResult } = require('express-validator')
 const mysql = require('mysql2');
 const app = express()
 const CookieSession = require('cookie-session');
-const res = require('express/lib/response');
 const bodyParser = require("body-parser");
-const { off } = require('process');
 
 app.use(bodyParser.urlencoded({ extended: false }));
 
